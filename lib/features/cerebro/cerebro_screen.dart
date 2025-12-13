@@ -1,34 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/chat_message_widget.dart';
 import 'widgets/chat_input_widget.dart';
-import 'models/chat_message.dart';
+import 'providers/cerebro_providers.dart';
+import 'screens/memory_search_screen.dart';
 
 /// CEREBRO main screen - Chat interface with NEXUS brain
-class CerebroScreen extends StatefulWidget {
+class CerebroScreen extends ConsumerStatefulWidget {
   const CerebroScreen({super.key});
 
   @override
-  State<CerebroScreen> createState() => _CerebroScreenState();
+  ConsumerState<CerebroScreen> createState() => _CerebroScreenState();
 }
 
-class _CerebroScreenState extends State<CerebroScreen> {
-  final List<ChatMessage> _messages = [];
+class _CerebroScreenState extends ConsumerState<CerebroScreen> {
   final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Add welcome message
-    _messages.add(
-      ChatMessage(
-        content: 'Hola Ricardo! Soy NEXUS. ¿En qué puedo ayudarte hoy?',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ),
-    );
-  }
 
   @override
   void dispose() {
@@ -39,34 +26,9 @@ class _CerebroScreenState extends State<CerebroScreen> {
   void _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    // Add user message
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          content: text,
-          isUser: true,
-          timestamp: DateTime.now(),
-        ),
-      );
-      _isLoading = true;
-    });
-
-    _scrollToBottom();
-
-    // TODO: Implement actual API call to CEREBRO
-    // For now, simulate response
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          content: 'Entendido. Estoy procesando tu solicitud... (API no conectada aún)',
-          isUser: false,
-          timestamp: DateTime.now(),
-        ),
-      );
-      _isLoading = false;
-    });
+    ref.read(isLoadingProvider.notifier).state = true;
+    await ref.read(chatMessagesProvider.notifier).sendMessage(text);
+    ref.read(isLoadingProvider.notifier).state = false;
 
     _scrollToBottom();
   }
@@ -85,6 +47,9 @@ class _CerebroScreenState extends State<CerebroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final messages = ref.watch(chatMessagesProvider);
+    final isLoading = ref.watch(isLoadingProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -105,17 +70,46 @@ class _CerebroScreenState extends State<CerebroScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // TODO: Implement memory search
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Memory search coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MemorySearchScreen()),
               );
             },
           ),
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              // TODO: Show options menu
+            onSelected: (value) {
+              switch (value) {
+                case 'clear':
+                  ref.read(chatMessagesProvider.notifier).clearChat();
+                  break;
+                case 'stats':
+                  _showStats(context);
+                  break;
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'clear',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline),
+                    SizedBox(width: 12),
+                    Text('Limpiar chat'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'stats',
+                child: Row(
+                  children: [
+                    Icon(Icons.analytics_outlined),
+                    SizedBox(width: 12),
+                    Text('Estadísticas'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         flexibleSpace: Container(
@@ -135,17 +129,52 @@ class _CerebroScreenState extends State<CerebroScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
+              itemCount: messages.length + (isLoading ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == _messages.length && _isLoading) {
+                if (index == messages.length && isLoading) {
                   return const _TypingIndicator();
                 }
-                return ChatMessageWidget(message: _messages[index]);
+                return ChatMessageWidget(message: messages[index]);
               },
             ),
           ),
           // Input area
           ChatInputWidget(onSend: _sendMessage),
+        ],
+      ),
+    );
+  }
+
+  void _showStats(BuildContext context) {
+    final statsAsync = ref.read(cerebroStatsProvider);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Estadísticas CEREBRO'),
+        content: statsAsync.when(
+          data: (stats) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _StatRow(label: 'Episodios', value: stats.formattedEpisodeCount),
+              _StatRow(
+                label: 'Con embeddings',
+                value: '${stats.embeddingCoverage.toStringAsFixed(1)}%',
+              ),
+              _StatRow(
+                label: 'Estado',
+                value: stats.isConnected ? 'Conectado' : 'Desconectado',
+              ),
+            ],
+          ),
+          loading: () => const CircularProgressIndicator(),
+          error: (e, _) => Text('Error: $e'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
         ],
       ),
     );
@@ -189,6 +218,27 @@ class _TypingIndicator extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _StatRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
