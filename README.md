@@ -56,30 +56,16 @@ A single application that connects Ricardo to his entire digital ecosystem:
 
 ## 🚦 Roadmap
 
-### Phase 1: Foundation (Current)
-- [x] Repository setup
-- [x] Architecture definition
-- [ ] Flutter project init
-- [ ] Base UI components
-- [ ] API service layer
+| Phase | Status | Progress |
+|-------|--------|----------|
+| Phase 0: Initialization | ✅ COMPLETE | 100% |
+| Phase 1: Foundation | 🔵 NEXT | 0% |
+| Phase 2: CEREBRO Module | ⚪ PENDING | 0% |
+| Phase 3: PDF Toolkit | ⚪ PENDING | 0% |
+| Phase 4: ARIA Assistant | ⚪ PENDING | 0% |
+| Phase 5: Polish & Deploy | ⚪ PENDING | 0% |
 
-### Phase 2: CEREBRO Module
-- [ ] Chat interface
-- [ ] Memory search
-- [ ] Episode viewer
-- [ ] Voice input
-
-### Phase 3: PDF Toolkit
-- [ ] File picker
-- [ ] Merge/Split
-- [ ] Compress
-- [ ] OCR
-
-### Phase 4: ARIA Assistant
-- [ ] Email integration
-- [ ] Task sync
-- [ ] Calendar view
-- [ ] Reminders
+**📖 Full Roadmap:** See [docs/ROADMAP.md](./docs/ROADMAP.md) for detailed breakdown of all phases, tasks, and deliverables.
 
 ## 🏃 Quick Start
 
