@@ -13,7 +13,7 @@
 - Created CLAUDE.md constitution
 - Established memory protocol
 - Created initial task plans
-- **Files created directly on PC via Claude Desktop**
+- **Files pushed directly to GitHub via MCP**
 
 **Decisions Made:**
 - Flutter as framework (cross-platform Android + Windows)
@@ -24,12 +24,13 @@
 **Discoveries:**
 - Claude Web/Mobile can create files but not git push
 - RustDesk + Claude Desktop = full PC access from phone!
+- GitHub MCP works with valid PAT token
 - Workflow validated: Design anywhere → Execute on PC
 
 **Lessons Learned:**
-- GitHub MCP tools may need configuration
+- GitHub PAT tokens expire - keep them updated
 - Filesystem tools work perfectly for direct file creation
-- Multi-device workflow is viable
+- Multi-device workflow is viable and powerful
 
 **Next Session:**
 - Run `flutter create` to initialize project
