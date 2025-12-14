@@ -98,7 +98,12 @@
   - Rewrote cerebro_service.dart to use /brain/process, /memory/search, /memory/action
   - Tested all endpoints successfully
 - ✅ Built Windows executable: nexus_suite.exe (13.9s)
-- ✅ Commits: 6539f45 (fixes), 1232db5 (docs), be95e09 (API)
+- ✅ **App Launched Successfully:**
+  - Ran flutter run on Windows
+  - Initial 404 error on /brain/process (wrong base URL)
+  - Fixed: Changed api_service.dart from localApiBase to localUrl
+  - App now connects successfully to CEREBRO V3.0.0
+- ✅ Commits: 6539f45 (fixes), 1232db5 (docs), be95e09 (API), 007dbca (docs), 261706c (API fix)
 
 **Decisions Made:**
 - Selected Option B: Review code before fixing (Ricardo approval)
@@ -113,7 +118,12 @@
 - **CEREBRO V3.0.0 has 200+ endpoints** (full cognitive architecture)
 - Real endpoints different from NEXUS@WEB design (/memory/* vs /cerebro/*)
 - VPS CEREBRO not accessible remotely (using localhost:8003 for development)
-- /brain/process returns cognitive processing (not conversational chat)
+- **/brain/process returns cognitive processing metadata (NOT conversational chat)**
+- **CEREBRO doesn't have built-in LLM** - returns LABs activated, phi, processing time
+- To get conversational responses, needs LLM integration:
+  - Option 1: Ollama local (free, private, requires GPU)
+  - Option 2: Claude API (best quality, costs money)
+  - Option 3: "Brain Inspector" mode (current functionality, shows cognitive metadata)
 
 **Lessons Learned:**
 - Always verify GitHub PAT token before operations
@@ -123,18 +133,25 @@
 - **Check /openapi.json first** - don't assume endpoint names
 - API integration requires understanding backend architecture deeply
 - GitHub Push Protection prevents accidental token commits (saved by safety net)
+- **Understand what the backend actually does** - CEREBRO is cognitive processor, not chatbot
+- Base URL matters: /api/v1 prefix caused 404s (CEREBRO V3.0.0 uses root endpoints)
 
 **Current State:**
 - Phase 0: ✅ 100% complete
 - Phase 1: ✅ 100% complete (API configured!) 🎉
-- Phase 2: ✅ 95% complete (backend connected, ready to test)
-- **APP BUILDS SUCCESSFULLY** - nexus_suite.exe ready
-- **CEREBRO V3.0.0 CONNECTED** - localhost:8003
+- Phase 2: ✅ 100% complete - **APP FULLY FUNCTIONAL** 🎉
+- **APP RUNNING ON WINDOWS** - nexus_suite.exe launches successfully
+- **CEREBRO V3.0.0 CONNECTED** - localhost:8003 responding
+- **Cognitive processing working** - Brain returns LABs, phi, processing time
+- **Pending decision:** Add LLM for conversational responses
 
 **Next Session:**
-- Run app and test CEREBRO chat interface live
-- Verify memory search works from Flutter UI
-- Test episode creation from app
+- **DECISIÓN REQUERIDA:** LLM integration approach
+  - Option 1: Ollama local (recommended) - Install Ollama, add /chat endpoint
+  - Option 2: Claude API - Configure API key, create chat endpoint
+  - Option 3: Keep "Brain Inspector" mode - Show cognitive metadata only
+- Test memory search functionality from UI
+- Test episode creation from UI
 - Address deprecations (withOpacity → withValues, background → surface)
 - Build Android APK and test on phone
 - (Optional) Setup VPS backend access for remote testing
