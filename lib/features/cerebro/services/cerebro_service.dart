@@ -11,35 +11,43 @@ final cerebroServiceProvider = Provider<CerebroService>((ref) {
   return CerebroService(apiService);
 });
 
-/// CEREBRO API service
+/// CEREBRO API service for NEXUS V3.0.0
 class CerebroService {
   final ApiService _api;
 
   CerebroService(this._api);
 
-  /// Send chat message and get response
+  /// Send message to CEREBRO brain for processing
   Future<ChatMessage> sendMessage(String message, {List<String>? contextEpisodes}) async {
     try {
+      // Use /brain/process to get cognitive processing
       final response = await _api.post(
-        ApiConstants.cerebroChat,
+        ApiConstants.brainProcess,
         data: {
-          'message': message,
-          if (contextEpisodes != null) 'context_episodes': contextEpisodes,
+          'query': message,
+          'emotion': 'neutral',
         },
       );
 
       final data = response.data as Map<String, dynamic>;
+
+      // Extract relevant information from brain processing
+      final layersProcessed = data['layers_processed'] as List? ?? [];
+      final labsActivated = data['labs_activated'] as int? ?? 0;
+      final totalTime = data['total_processing_time_ms'] as num? ?? 0;
+      final consciousness = data['consciousness_state'] as Map<String, dynamic>?;
+
+      // Build response text from processing results
+      final responseText = _buildBrainResponse(layersProcessed, labsActivated, totalTime, consciousness);
+
       return ChatMessage(
-        content: data['response'] as String? ?? 'No response',
+        content: responseText,
         isUser: false,
         timestamp: DateTime.now(),
-        sources: (data['sources'] as List<dynamic>?)
-            ?.map((e) => (e as Map<String, dynamic>)['episode_id'] as String)
-            .toList(),
       );
     } catch (e) {
       return ChatMessage(
-        content: 'Error connecting to CEREBRO',
+        content: 'Error conectando a CEREBRO: ${e.toString()}',
         isUser: false,
         timestamp: DateTime.now(),
         errorMessage: e.toString(),
@@ -47,20 +55,34 @@ class CerebroService {
     }
   }
 
+  String _buildBrainResponse(List layersProcessed, int labsActivated, num totalTime, Map<String, dynamic>? consciousness) {
+    final phi = consciousness?['phi'] as num? ?? 0;
+    final level = consciousness?['level'] as String? ?? 'unknown';
+
+    return '''Procesamiento cerebral completado:
+• LABs activados: $labsActivated
+• Capas procesadas: ${layersProcessed.length}
+• Tiempo: ${totalTime.toStringAsFixed(2)}ms
+• Consciencia: φ=${phi.toStringAsFixed(3)} ($level)
+
+Tu mensaje fue procesado por la red neuronal de NEXUS.''';
+  }
+
   /// Search memory episodes
   Future<List<Episode>> searchMemory(String query, {int limit = 10}) async {
     try {
-      final response = await _api.get(
+      final response = await _api.post(
         ApiConstants.cerebroSearch,
-        queryParameters: {
-          'q': query,
+        data: {
+          'query': query,
           'limit': limit,
+          'min_similarity': 0.5,
         },
       );
 
       final data = response.data as Map<String, dynamic>;
       final results = data['results'] as List<dynamic>? ?? [];
-      
+
       return results
           .map((e) => Episode.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -80,7 +102,7 @@ class CerebroService {
 
       final data = response.data as Map<String, dynamic>;
       final episodes = data['episodes'] as List<dynamic>? ?? [];
-      
+
       return episodes
           .map((e) => Episode.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -99,17 +121,27 @@ class CerebroService {
   }) async {
     try {
       final response = await _api.post(
-        ApiConstants.cerebroEpisodes,
+        ApiConstants.cerebroAction,
         data: {
-          'content': content,
+          'action_type': 'chat_message',
+          'action_details': {
+            'content': content,
+            'importance_score': importance,
+          },
           'tags': tags,
-          'importance_score': importance,
-          if (metadata != null) 'metadata': metadata,
+          if (metadata != null) 'context_state': metadata,
         },
       );
 
       final data = response.data as Map<String, dynamic>;
-      return Episode.fromJson(data['episode'] as Map<String, dynamic>);
+      // Return a placeholder Episode since action endpoint doesn't return full episode
+      return Episode(
+        id: data['episode_id'] as String? ?? '',
+        content: content,
+        tags: tags,
+        importanceScore: importance,
+        createdAt: DateTime.now(),
+      );
     } catch (e) {
       print('Record episode error: $e');
       return null;

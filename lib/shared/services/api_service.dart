@@ -14,7 +14,7 @@ class ApiService {
   ApiService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.localApiBase, // Change to apiBase for production
+        baseUrl: ApiConstants.localApiBase, // Using local CEREBRO V3.0.0 (port 8003)
         connectTimeout: ApiConstants.connectTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
         sendTimeout: ApiConstants.sendTimeout,
