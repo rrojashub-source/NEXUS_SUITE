@@ -19,7 +19,8 @@ class ChatMessageWidget extends StatelessWidget {
             message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!message.isUser) ...[\n            // Avatar for NEXUS
+          if (!message.isUser) ...[
+            // Avatar for NEXUS
             Container(
               width: 36,
               height: 36,
