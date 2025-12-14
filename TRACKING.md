@@ -91,8 +91,14 @@
   - app_theme.dart:31,107 - CardTheme → CardThemeData
   - test/widget_test.dart:16 - MyApp → NexusSuiteApp
 - ✅ Verified compilation: flutter analyze = 0 errors
-- ✅ Tested build: Windows app compiles successfully
-- ✅ Committed fixes: commit 6539f45
+- ✅ **API Integration with CEREBRO V3.0.0:**
+  - Discovered real endpoints via /openapi.json
+  - Updated api_constants.dart with actual V3.0.0 endpoints
+  - Configured api_service.dart for localhost:8003
+  - Rewrote cerebro_service.dart to use /brain/process, /memory/search, /memory/action
+  - Tested all endpoints successfully
+- ✅ Built Windows executable: nexus_suite.exe (13.9s)
+- ✅ Commits: 6539f45 (fixes), 1232db5 (docs), be95e09 (API)
 
 **Decisions Made:**
 - Selected Option B: Review code before fixing (Ricardo approval)
@@ -104,25 +110,34 @@
 - Code quality high but had 3 syntax/type errors from remote editing
 - Flutter analyze catches CardTheme vs CardThemeData mismatch
 - CEREBRO memory has tag "nexus suite" with handoff context
+- **CEREBRO V3.0.0 has 200+ endpoints** (full cognitive architecture)
+- Real endpoints different from NEXUS@WEB design (/memory/* vs /cerebro/*)
+- VPS CEREBRO not accessible remotely (using localhost:8003 for development)
+- /brain/process returns cognitive processing (not conversational chat)
 
 **Lessons Learned:**
 - Always verify GitHub PAT token before operations
 - Code review BEFORE fixing saves time (identifies priorities)
 - WSL + Windows Flutter compile verification works via cmd.exe
 - NEXUS@WEB → NEXUS@CLI handoff protocol successful
+- **Check /openapi.json first** - don't assume endpoint names
+- API integration requires understanding backend architecture deeply
+- GitHub Push Protection prevents accidental token commits (saved by safety net)
 
 **Current State:**
 - Phase 0: ✅ 100% complete
-- Phase 1: ✅ 95% complete (needs API endpoint configuration)
-- Phase 2: ✅ 85% complete (CEREBRO chat works, needs backend)
-- **APP COMPILES SUCCESSFULLY** - Ready for backend integration
+- Phase 1: ✅ 100% complete (API configured!) 🎉
+- Phase 2: ✅ 95% complete (backend connected, ready to test)
+- **APP BUILDS SUCCESSFULLY** - nexus_suite.exe ready
+- **CEREBRO V3.0.0 CONNECTED** - localhost:8003
 
 **Next Session:**
-- Configure API endpoints (update vpsUrl in api_constants.dart)
-- Test CEREBRO chat with real backend
+- Run app and test CEREBRO chat interface live
+- Verify memory search works from Flutter UI
+- Test episode creation from app
 - Address deprecations (withOpacity → withValues, background → surface)
-- Implement error handling in API service
-- Test on Windows + Android emulator
+- Build Android APK and test on phone
+- (Optional) Setup VPS backend access for remote testing
 
 ---
 
